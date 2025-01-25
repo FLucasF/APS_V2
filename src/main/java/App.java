@@ -3,7 +3,6 @@ import controller.ParticipanteController;
 import controller.ProjetoController;
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
-import io.javalin.json.JavalinJackson;
 import io.javalin.rendering.template.JavalinThymeleaf;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
@@ -25,7 +24,6 @@ public class App {
         // Configuração do Javalin
         Javalin app = Javalin.create(config -> {
             config.staticFiles.add(staticFileConfig -> {
-                config.jsonMapper(new JavalinJackson()); // Configuração do Jackson
                 staticFileConfig.directory = "/templates";
                 staticFileConfig.location = Location.CLASSPATH;
             });
