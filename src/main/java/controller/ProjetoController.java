@@ -19,48 +19,15 @@ public class ProjetoController {
     private final ParticipanteService participanteService = new ParticipanteService();
 
     public void registerRoutes(Javalin app) {
-        app.post("/projetos", this::createProjeto);
-        app.get("/projetos/get/{id}", this::getProjeto);
-        app.get("/projetos/getAll", this::getAllProjetos);
-        app.post("/projetos/update/{id}", this::updateProjeto);
-        app.get("/projetos/delete/{id}", this::deleteProjeto);
         app.get("/projetos/novo", this::formNovoProjeto);
+        app.post("/projetos", this::createProjeto);
+
         app.get("/projetos/{id}/editar", this::formEditarProjeto);
+        app.post("/projetos/update/{id}", this::updateProjeto);
+
+        app.get("/projetos/getAll", this::getAllProjetos);
+        app.get("/projetos/delete/{id}", this::deleteProjeto);
         app.get("/projetos/listar", this::listarProjetosHtml);
-    }
-
-    private void formNovoProjeto(Context ctx) {
-        try {
-            List<Participante> participantes = participanteService.listarParticipantes();
-            ctx.render("/projeto/adicionar-projeto.html", Map.of("participantes", participantes));
-        } catch (Exception e) {
-            log.error("Erro ao carregar formulário de novo projeto", e);
-            ctx.status(500).result("Erro ao carregar formulário de novo projeto: " + e.getMessage());
-        }
-    }
-
-    private void formEditarProjeto(Context ctx) {
-        try {
-            Long id = Long.parseLong(ctx.pathParam("id"));
-            Projeto projeto = projetoService.buscarProjetoPorId(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Projeto não encontrado"));
-
-            List<Participante> participantes = participanteService.listarParticipantes();
-            ctx.render("/projeto/editar-projeto.html", Map.of("projeto", projeto, "participantes", participantes));
-        } catch (Exception e) {
-            log.error("Erro ao carregar formulário de edição", e);
-            ctx.status(500).result("Erro ao carregar formulário de edição: " + e.getMessage());
-        }
-    }
-
-    private void listarProjetosHtml(Context ctx) {
-        try {
-            List<Projeto> projetos = projetoService.listarProjetos();
-            ctx.render("/projeto/listar-projeto.html", Map.of("projetos", projetos));
-        } catch (Exception e) {
-            log.error("Erro ao carregar listagem de projetos", e);
-            ctx.status(500).result("Erro ao carregar listagem de projetos: " + e.getMessage());
-        }
     }
 
     private void createProjeto(Context ctx) {
@@ -90,16 +57,13 @@ public class ProjetoController {
         }
     }
 
-    private void getProjeto(Context ctx) {
+    private void formNovoProjeto(Context ctx) {
         try {
-            Long id = Long.parseLong(ctx.pathParam("id"));
-            Projeto projeto = projetoService.buscarProjetoPorId(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Projeto não encontrado"));
-
-            ctx.render("/projeto/detalhes-projeto.html", Map.of("projeto", projeto));
+            List<Participante> participantes = participanteService.listarParticipantes();
+            ctx.render("/projeto/adicionar-projeto.html", Map.of("participantes", participantes));
         } catch (Exception e) {
-            log.error("Erro ao buscar projeto", e);
-            ctx.status(500).result("Erro ao buscar projeto: " + e.getMessage());
+            log.error("Erro ao carregar formulário de novo projeto", e);
+            ctx.status(500).result("Erro ao carregar formulário de novo projeto: " + e.getMessage());
         }
     }
 
@@ -110,6 +74,16 @@ public class ProjetoController {
         } catch (Exception e) {
             log.error("Erro ao listar projetos", e);
             ctx.status(500).result("Erro ao listar projetos: " + e.getMessage());
+        }
+    }
+
+    private void listarProjetosHtml(Context ctx) {
+        try {
+            List<Projeto> projetos = projetoService.listarProjetos();
+            ctx.render("/projeto/listar-projeto.html", Map.of("projetos", projetos));
+        } catch (Exception e) {
+            log.error("Erro ao carregar listagem de projetos", e);
+            ctx.status(500).result("Erro ao carregar listagem de projetos: " + e.getMessage());
         }
     }
 
@@ -143,6 +117,20 @@ public class ProjetoController {
         } catch (Exception e) {
             log.error("Erro ao atualizar projeto", e);
             ctx.status(500).result("Erro ao atualizar projeto: " + e.getMessage());
+        }
+    }
+
+    private void formEditarProjeto(Context ctx) {
+        try {
+            Long id = Long.parseLong(ctx.pathParam("id"));
+            Projeto projeto = projetoService.buscarProjetoPorId(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Projeto não encontrado"));
+
+            List<Participante> participantes = participanteService.listarParticipantes();
+            ctx.render("/projeto/editar-projeto.html", Map.of("projeto", projeto, "participantes", participantes));
+        } catch (Exception e) {
+            log.error("Erro ao carregar formulário de edição", e);
+            ctx.status(500).result("Erro ao carregar formulário de edição: " + e.getMessage());
         }
     }
 

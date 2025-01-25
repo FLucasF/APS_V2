@@ -12,9 +12,23 @@ public class ProjetoService {
     private final ProjetoRepository projetoRepository = new ProjetoRepository();
     private final ParticipanteRepository participanteRepository = new ParticipanteRepository();
 
+    public void adicionarProjeto(Projeto projeto) {
+        projetoRepository.adicionar(projeto);
+
+        if (projeto.getParticipante() != null) {
+            Long participanteId = projeto.getParticipante().getId();
+            Long projetoId = projeto.getId();
+
+            projetoRepository.adicionarParticipanteAoProjeto(participanteId, projetoId);
+        }
+    }
 
     public List<Projeto> listarProjetos() {
         return projetoRepository.listarTodos();
+    }
+
+    public List<Projeto> listarProjetosDoParticipante(Long participanteId) {
+        return projetoRepository.listarProjetosPorParticipante(participanteId);
     }
 
     public Optional<Projeto> buscarProjetoPorId(Long id) {
@@ -27,20 +41,5 @@ public class ProjetoService {
 
     public void removerProjeto(Long id) {
         projetoRepository.remover(id);
-    }
-
-    public void adicionarProjeto(Projeto projeto) {
-        projetoRepository.adicionar(projeto);
-
-        if (projeto.getParticipante() != null) {
-            Long participanteId = projeto.getParticipante().getId();
-            Long projetoId = projeto.getId();
-
-            projetoRepository.adicionarParticipanteAoProjeto(participanteId, projetoId);
-        }
-    }
-
-    public List<Projeto> listarProjetosDoParticipante(Long participanteId) {
-        return projetoRepository.listarProjetosPorParticipante(participanteId);
     }
 }

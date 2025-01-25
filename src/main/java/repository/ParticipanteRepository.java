@@ -109,7 +109,6 @@ public class ParticipanteRepository {
         }
     }
 
-
     public void remover(Long id) {
         String sql = "DELETE FROM participantes WHERE id = ?";
 

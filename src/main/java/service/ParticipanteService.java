@@ -10,7 +10,6 @@ import java.util.Optional;
 public class ParticipanteService {
 
     private final ParticipanteRepository participanteRepository = new ParticipanteRepository();
-    private final ProjetoRepository projetoRepository = new ProjetoRepository();
 
     public void adicionarParticipante(Participante participante) {
         participanteRepository.adicionar(participante);

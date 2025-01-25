@@ -19,57 +19,16 @@ public class ParticipanteController {
     private final ProjetoService projetoService = new ProjetoService();
 
     public void registerRoutes(Javalin app) {
-        app.post("/participantes", this::createParticipante);
-        app.get("/participantes/get/{id}", this::getParticipante);
-        app.get("/participantes/getAll", this::getAllParticipantes);
-        app.post("/participantes/update/{id}", this::updateParticipante);
-        app.get("/participantes/delete/{id}", this::deleteParticipante);
         app.get("/participantes/novo", this::formNovoParticipante);
+        app.post("/participantes", this::createParticipante);
+
         app.get("/participantes/{id}/editar", this::formEditarParticipante);
+        app.post("/participantes/update/{id}", this::updateParticipante);
+
+        app.get("/participantes/getAll", this::getAllParticipantes);
+        app.get("/participantes/delete/{id}", this::deleteParticipante);
         app.get("/participantes/listar", this::listarParticipantes);
     }
-
-    public void listarParticipantes(Context ctx) {
-        List<Participante> participantes = participanteService.listarParticipantes();
-
-        // Para cada participante, buscar os projetos associados
-        for (Participante participante : participantes) {
-            List<Projeto> projetos = projetoService.listarProjetosDoParticipante(participante.getId());
-            participante.setProjetosList(projetos);  // Associando a lista de projetos ao participante
-        }
-
-        ctx.attribute("participantes", participantes);
-        ctx.render("/participante/listar-participantes.html");  // Renderizando o template
-    }
-
-    private void formNovoParticipante(Context ctx) {
-        try {
-            ctx.render("/participante/adicionar-participante.html", Map.of(
-                    "tipos", enums.Tipo.values()
-            ));
-        } catch (Exception e) {
-            log.error("Erro ao carregar formulário de novo participante", e);
-            ctx.status(500).result("Erro ao carregar formulário de novo participante: " + e.getMessage());
-        }
-    }
-
-    private void formEditarParticipante(Context ctx) {
-        try {
-            Long id = Long.parseLong(ctx.pathParam("id"));
-            Participante participante = participanteService.buscarParticipantePorId(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Participante não encontrado"));
-
-            // Disponibiliza o enum Tipo para o template
-            ctx.render("/participante/editar-participante.html", Map.of(
-                    "participante", participante,
-                    "tipos", Tipo.values()
-            ));
-        } catch (Exception e) {
-            log.error("Erro ao carregar formulário de edição", e);
-            ctx.status(500).result("Erro ao carregar formulário de edição: " + e.getMessage());
-        }
-    }
-
 
     private void createParticipante(Context ctx) {
         try {
@@ -99,17 +58,14 @@ public class ParticipanteController {
         }
     }
 
-
-    private void getParticipante(Context ctx) {
+    private void formNovoParticipante(Context ctx) {
         try {
-            Long id = Long.parseLong(ctx.pathParam("id"));
-            Participante participante = participanteService.buscarParticipantePorId(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Participante não encontrado"));
-
-            ctx.render("/participante/detalhes-participante.html", Map.of("participante", participante));
+            ctx.render("/participante/adicionar-participante.html", Map.of(
+                    "tipos", enums.Tipo.values()
+            ));
         } catch (Exception e) {
-            log.error("Erro ao buscar participante", e);
-            ctx.status(500).result("Erro ao buscar participante: " + e.getMessage());
+            log.error("Erro ao carregar formulário de novo participante", e);
+            ctx.status(500).result("Erro ao carregar formulário de novo participante: " + e.getMessage());
         }
     }
 
@@ -121,6 +77,19 @@ public class ParticipanteController {
             log.error("Erro ao listar participantes", e);
             ctx.status(500).result("Erro ao listar participantes: " + e.getMessage());
         }
+    }
+
+    public void listarParticipantes(Context ctx) {
+        List<Participante> participantes = participanteService.listarParticipantes();
+
+        // Para cada participante, buscar os projetos associados
+        for (Participante participante : participantes) {
+            List<Projeto> projetos = projetoService.listarProjetosDoParticipante(participante.getId());
+            participante.setProjetosList(projetos);  // Associando a lista de projetos ao participante
+        }
+
+        ctx.attribute("participantes", participantes);
+        ctx.render("/participante/listar-participantes.html");  // Renderizando o template
     }
 
     private void updateParticipante(Context ctx) {
@@ -153,6 +122,22 @@ public class ParticipanteController {
         }
     }
 
+    private void formEditarParticipante(Context ctx) {
+        try {
+            Long id = Long.parseLong(ctx.pathParam("id"));
+            Participante participante = participanteService.buscarParticipantePorId(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Participante não encontrado"));
+
+            // Disponibiliza o enum Tipo para o template
+            ctx.render("/participante/editar-participante.html", Map.of(
+                    "participante", participante,
+                    "tipos", Tipo.values()
+            ));
+        } catch (Exception e) {
+            log.error("Erro ao carregar formulário de edição", e);
+            ctx.status(500).result("Erro ao carregar formulário de edição: " + e.getMessage());
+        }
+    }
 
     private void deleteParticipante(Context ctx) {
         try {
@@ -168,4 +153,13 @@ public class ParticipanteController {
             ctx.status(500).result("Erro ao remover participante: " + e.getMessage());
         }
     }
+
+
+
+
+
+
+
+
+
 }

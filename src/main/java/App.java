@@ -11,7 +11,7 @@ import io.javalin.http.Context;
 public class App {
 
     public void start() {
-        // Configuração do Thymeleaf
+        //config do Thymeleaf
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setPrefix("/templates/");
         templateResolver.setSuffix(".html");
@@ -21,7 +21,7 @@ public class App {
         TemplateEngine templateEngine = new TemplateEngine();
         templateEngine.setTemplateResolver(templateResolver);
 
-        // Configuração do Javalin
+        //config do Javalin
         Javalin app = Javalin.create(config -> {
             config.staticFiles.add(staticFileConfig -> {
                 staticFileConfig.directory = "/templates";
@@ -30,32 +30,25 @@ public class App {
             config.fileRenderer(new JavalinThymeleaf(templateEngine));
         }).start(7000);
 
+        registerRoutes(app);
 
         app.get("/", ctx -> ctx.redirect("/login"));
-
-
-        // Registra as rotas nos controladores
-        registerRoutes(app);
-        // Middleware para verificar autenticação em rotas protegidas
-        app.before("/projetos/*", this::verificarAutenticacao);
+        app.before("/projetos/*", this::verificarAutenticacao); //posso simplificar com apenas "/"? ou é um mal hábito?
         app.before("/participantes/*", this::verificarAutenticacao);
     }
 
     private void registerRoutes(Javalin app) {
-        // Instancia os controladores
         ProjetoController projetoController = new ProjetoController();
         ParticipanteController participanteController = new ParticipanteController();
         LoginController loginController = new LoginController();
 
-        // Registra as rotas de projeto
         projetoController.registerRoutes(app);
-        // Registra as rotas de participante
         participanteController.registerRoutes(app);
         loginController.registerRouters(app);
     }
 
+    //middleware
     private void verificarAutenticacao(Context ctx) {
-        // Middleware para verificar autenticação
         String usuario = ctx.cookie("auth");
         if (usuario == null || usuario.isEmpty()) {
             ctx.redirect("/login");
