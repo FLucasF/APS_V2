@@ -153,13 +153,4 @@ public class ParticipanteController {
             ctx.status(500).result("Erro ao remover participante: " + e.getMessage());
         }
     }
-
-
-
-
-
-
-
-
-
 }
