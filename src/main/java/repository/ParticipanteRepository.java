@@ -2,6 +2,8 @@ package repository;
 import config.DatabaseConnection;
 import enums.Tipo;
 import model.Participante;
+import org.jetbrains.annotations.NotNull;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,17 +41,7 @@ public class ParticipanteRepository {
              ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
-                Participante participante = new Participante();
-                participante.setId(resultSet.getLong("id"));
-                participante.setNome(resultSet.getString("nome"));
-                participante.setEmail(resultSet.getString("email"));
-                participante.setBio(resultSet.getString("bio"));
-
-                // Conversão da String para Tipo
-                String tipoString = resultSet.getString("tipo");
-                if (tipoString != null) {
-                    participante.setTipo(Tipo.valueOf(tipoString));
-                }
+                Participante participante = getParticipanteData(resultSet);
 
                 participantes.add(participante);
             }
@@ -58,7 +50,6 @@ public class ParticipanteRepository {
         }
         return participantes;
     }
-
 
     public Optional<Participante> buscarPorId(Long id) {
         String sql = "SELECT id, nome, email, tipo, bio FROM participantes WHERE id = ?";
@@ -69,17 +60,7 @@ public class ParticipanteRepository {
             ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
-                Participante participante = new Participante();
-                participante.setId(resultSet.getLong("id"));
-                participante.setNome(resultSet.getString("nome"));
-                participante.setEmail(resultSet.getString("email"));
-                participante.setBio(resultSet.getString("bio"));
-
-                // Conversão da String para Tipo
-                String tipoString = resultSet.getString("tipo");
-                if (tipoString != null) {
-                    participante.setTipo(Tipo.valueOf(tipoString));
-                }
+                Participante participante = getParticipanteData(resultSet);
 
                 return Optional.of(participante);
             }
@@ -121,5 +102,20 @@ public class ParticipanteRepository {
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao remover participante.", e);
         }
+    }
+
+    private static Participante getParticipanteData(ResultSet resultSet) throws SQLException {
+        Participante participante = new Participante();
+        participante.setId(resultSet.getLong("id"));
+        participante.setNome(resultSet.getString("nome"));
+        participante.setEmail(resultSet.getString("email"));
+        participante.setBio(resultSet.getString("bio"));
+
+        // Conversão da String para Tipo
+        String tipoString = resultSet.getString("tipo");
+        if (tipoString != null) {
+            participante.setTipo(Tipo.valueOf(tipoString));
+        }
+        return participante;
     }
 }

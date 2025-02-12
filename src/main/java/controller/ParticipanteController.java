@@ -37,6 +37,13 @@ public class ParticipanteController {
             String bio = ctx.formParam("bio");
             String tipoParam = ctx.formParam("tipo");
 
+            System.out.println("Recebendo dados:");
+            System.out.println("Nome: " + nome);
+            System.out.println("Email: " + email);
+            System.out.println("Bio: " + bio);
+            System.out.println("Tipo recebido: " + tipoParam);
+
+
             if (nome == null || email == null || tipoParam == null) {
                 throw new IllegalArgumentException("Nome, email e tipo são obrigatórios.");
             }

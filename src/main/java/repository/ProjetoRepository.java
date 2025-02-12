@@ -4,6 +4,8 @@ package repository;
 import model.Participante;
 import model.Projeto;
 import config.DatabaseConnection;
+import org.jetbrains.annotations.NotNull;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +35,21 @@ public class ProjetoRepository {
         }
     }
 
+    public void adicionarParticipanteAoProjeto(Long participanteId, Long projetoId) { //adicionarParticipanteAoProjeto deve ficar no projeto, certo?
+        String sql = "INSERT INTO participantes_projetos (participante_id, projeto_id) VALUES (?, ?)";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setLong(1, participanteId);
+            statement.setLong(2, projetoId);
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao associar participante ao projeto.", e);
+        }
+    }
+
     public List<Projeto> listarTodos() {
         String sql = "SELECT p.*, c.id as participante_id, c.nome as participante_nome " +
                 "FROM projetos p LEFT JOIN participantes c ON p.participante_id = c.id";
@@ -43,12 +60,7 @@ public class ProjetoRepository {
              ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
-                Projeto projeto = new Projeto();
-                projeto.setId(resultSet.getLong("id"));
-                projeto.setNome(resultSet.getString("nome"));
-                projeto.setDescricao(resultSet.getString("descricao"));
-                projeto.setDataInicio(resultSet.getDate("data_inicio").toLocalDate());
-                projeto.setDataEncerramento(resultSet.getDate("data_encerramento").toLocalDate());
+                Projeto projeto = getProjetoData(resultSet);
 
                 Participante participante = new Participante();
                 participante.setId(resultSet.getLong("participante_id"));
@@ -64,6 +76,30 @@ public class ProjetoRepository {
         return projetos;
     }
 
+    public List<Projeto> listarProjetosPorParticipante(Long participanteId) {
+        String sql = "SELECT p.* FROM projetos p " +
+                "JOIN participantes_projetos pp ON p.id = pp.projeto_id " +
+                "WHERE pp.participante_id = ?";
+        List<Projeto> projetos = new ArrayList<>();
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setLong(1, participanteId);
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                Projeto projeto = getProjetoData(resultSet);
+                projetos.add(projeto);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao listar projetos do participante.", e);
+        }
+
+        return projetos;
+    }
+
     public Optional<Projeto> buscarPorId(Long id) {
         String sql = "SELECT * FROM projetos WHERE id = ?";
         try (Connection connection = DatabaseConnection.getConnection();
@@ -73,12 +109,7 @@ public class ProjetoRepository {
             ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
-                Projeto projeto = new Projeto();
-                projeto.setId(resultSet.getLong("id"));
-                projeto.setNome(resultSet.getString("nome"));
-                projeto.setDescricao(resultSet.getString("descricao"));
-                projeto.setDataInicio(resultSet.getDate("data_inicio").toLocalDate());
-                projeto.setDataEncerramento(resultSet.getDate("data_encerramento").toLocalDate());
+                Projeto projeto = getProjetoData(resultSet);
                 return Optional.of(projeto);
             }
 
@@ -149,47 +180,14 @@ public class ProjetoRepository {
         }
     }
 
-    public List<Projeto> listarProjetosPorParticipante(Long participanteId) {
-        String sql = "SELECT p.* FROM projetos p " +
-                "JOIN participantes_projetos pp ON p.id = pp.projeto_id " +
-                "WHERE pp.participante_id = ?";
-        List<Projeto> projetos = new ArrayList<>();
-
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            statement.setLong(1, participanteId);
-            ResultSet resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                Projeto projeto = new Projeto();
-                projeto.setId(resultSet.getLong("id"));
-                projeto.setNome(resultSet.getString("nome"));
-                projeto.setDescricao(resultSet.getString("descricao"));
-                projeto.setDataInicio(resultSet.getDate("data_inicio").toLocalDate());
-                projeto.setDataEncerramento(resultSet.getDate("data_encerramento").toLocalDate());
-                projetos.add(projeto);
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Erro ao listar projetos do participante.", e);
-        }
-
-        return projetos;
-    }
-
-    public void adicionarParticipanteAoProjeto(Long participanteId, Long projetoId) {
-        String sql = "INSERT INTO participantes_projetos (participante_id, projeto_id) VALUES (?, ?)";
-
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            statement.setLong(1, participanteId);
-            statement.setLong(2, projetoId);
-            statement.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Erro ao associar participante ao projeto.", e);
-        }
+    @NotNull
+    private static Projeto getProjetoData(ResultSet resultSet) throws SQLException {
+        Projeto projeto = new Projeto();
+        projeto.setId(resultSet.getLong("id"));
+        projeto.setNome(resultSet.getString("nome"));
+        projeto.setDescricao(resultSet.getString("descricao"));
+        projeto.setDataInicio(resultSet.getDate("data_inicio").toLocalDate());
+        projeto.setDataEncerramento(resultSet.getDate("data_encerramento").toLocalDate());
+        return projeto;
     }
 }

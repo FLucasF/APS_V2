@@ -18,6 +18,7 @@ public class LoginController {
         app.post("/register", this::processarRegistro);
 
         app.get("/logout", this::logout);
+
     }
 
     private void mostrarPaginaLogin(Context ctx) {
